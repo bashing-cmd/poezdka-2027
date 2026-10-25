@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Поездка НГ 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&display=swap">
+<style>
+/* Layout: слева панель выбора (липкая на широком экране), справа план, бронирования, одежда, сборы */
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --ink:#15242D; --muted:#5A6A74; --line:#D8E0E5;
+  --accent:#E2701C; --accent-soft:#FCE9DA; --leaf:#2E6A4E; --leaf-soft:#E1EFE7;
+  --warn:#A8521A; --warn-soft:#FBEADF; --bad:#B3261E; --bad-soft:#FBE4E2;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E171C; --surface:#16232A; --ink:#E7EDF0; --muted:#9AAAB3; --line:#28363E;
+  --accent:#F28A3E; --accent-soft:#3A2614; --leaf:#74C39A; --leaf-soft:#173126;
+  --warn:#F0A36B; --warn-soft:#3A2414; --bad:#F2928A; --bad-soft:#3B1A18; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 56px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(24px,4.4vw,36px);line-height:1.1}
+h2{font-size:17px}
+h3{margin:0;font-size:14px;font-weight:600}
+p{margin:0}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{max-width:1200px;margin:0 auto 20px;display:flex;flex-direction:column;gap:12px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.summary div{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.summary b{font-family:var(--display);font-weight:500;font-size:18px;font-variant-numeric:tabular-nums}
+.summary span{font-size:12px;color:var(--muted)}
+.summary .good b{color:var(--leaf)} .summary .bad b{color:var(--bad)}
+@media (max-width:700px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:360px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding-bottom:4px}
+@media (max-width:920px){aside{position:static;max-height:none;overflow:visible}}
+main{display:flex;flex-direction:column;gap:28px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>label,.field>.lbl{font-size:13px;color:var(--muted);font-weight:500}
+select{font:inherit;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{border:1px solid var(--line);background:var(--bg);padding:6px 11px;border-radius:999px;cursor:pointer;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.step{display:flex;align-items:center;gap:10px}
+.step button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:17px;line-height:1}
+.step button:disabled{opacity:.35;cursor:default}
+.step output{min-width:1.6em;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.checks{display:flex;flex-direction:column;gap:2px}
+.checks label{display:flex;gap:9px;align-items:flex-start;padding:5px 4px;border-radius:8px;cursor:pointer;font-size:14px}
+.checks label:hover{background:var(--bg)}
+.checks input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.checks small{display:block;color:var(--muted);font-size:12px}
+.sub{margin-left:25px}
+
+/* календарь смен */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .wd{font-size:11px;color:var(--muted);text-align:center}
+.cal button{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:5px 0 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-variant-numeric:tabular-nums;line-height:1.15}
+.cal button small{font-size:10px;color:var(--muted)}
+.cal button.free{background:var(--leaf-soft)}            /* свободные дни — заливкой */
+.cal button.trip{border-color:var(--accent)}             /* поездка — рамкой, видна и поверх заливки */
+.cal button.work{background:var(--ink);color:var(--bg)}  /* смена перекрывает заливку свободного дня */
+.cal button.work small{color:var(--bg)}
+.cal button.work.trip{background:var(--bad);border-color:var(--bad);color:#fff}
+.cal button.bd{box-shadow:inset 0 -3px 0 var(--accent)}
+.cal .pad{visibility:hidden}
+.range{display:flex;align-items:center;gap:12px}
+.range input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+.range b{font-variant-numeric:tabular-nums;min-width:4.8em;text-align:right;font-size:14px}
+textarea#wish{width:100%;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+section{display:flex;flex-direction:column;gap:12px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 14px}
+.alerts{display:flex;flex-direction:column;gap:6px}
+.alert{padding:9px 12px;border-radius:10px;font-size:14px;background:var(--leaf-soft);color:var(--ink);border-left:3px solid var(--leaf)}
+.alert.warn{background:var(--warn-soft);border-left-color:var(--warn)}
+.alert.bad{background:var(--bad-soft);border-left-color:var(--bad)}
+
+.days{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.day{display:grid;grid-template-columns:92px minmax(0,1fr) 130px;gap:4px 16px;padding:12px 16px;border-top:1px solid var(--line)}
+.day:first-child{border-top:0}
+.day.bd{background:var(--accent-soft)}
+.day .d{font-weight:600;font-variant-numeric:tabular-nums}
+.day .d small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.day .t{font-weight:600;margin-bottom:2px}
+.day ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.day li{display:grid;grid-template-columns:50px minmax(0,1fr);gap:8px}
+.day li b{font-weight:500;font-variant-numeric:tabular-nums;color:var(--muted)}
+.day .n{font-size:13px;color:var(--muted);text-align:right}
+.day .n b{display:block;color:var(--ink);font-weight:500;font-size:14px}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--leaf-soft);color:var(--leaf);margin-left:6px;vertical-align:1px}
+.tag.abh{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:620px){.day{grid-template-columns:70px minmax(0,1fr)}.day .n{grid-column:2;text-align:left}.day .n b{display:inline;margin-left:4px}}
+
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 13px;border-radius:10px;cursor:pointer;font-size:14px}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+textarea{width:100%;min-height:140px;font:13px/1.45 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);color:var(--ink)}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+th,td{padding:9px 14px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+thead th{border-top:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{display:block;color:var(--muted);font-size:12px}
+tfoot td{font-weight:600;font-size:15px}
+.when-now{color:var(--bad);font-weight:600}
+
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card ul{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:3px}
+.card .temp{font-family:var(--display);font-weight:500;font-size:16px}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+
+.packs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.packs{grid-template-columns:1fr}}
+.pack{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.pack h3{padding:4px 4px 6px;display:flex;justify-content:space-between;gap:8px}
+.pack h3 span{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.pack input:checked+span{color:var(--muted);text-decoration:line-through}
+.money{border:2px dashed var(--accent);border-radius:16px;padding:16px;background:var(--surface)}
+.money .total{font-family:var(--display);font-size:26px;font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+.foot{font-size:13px;color:var(--muted);max-width:75ch}
+@media print{aside,.btns{display:none}.layout{display:block}}
+@media (prefers-reduced-motion:no-preference){.cal button,.seg button{transition:background-color .15s,color .15s}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <noscript>
+    <div class="alert bad" style="margin-bottom:16px">Страница открылась пустая: даты не подставились, календарь и план не собрались. Это не поломка — просто она открыта во встроенном просмотрщике, а он не запускает скрипты. Нажми «Поделиться» или «⋯» сверху и выбери «Открыть в Safari» (или в Chrome) — там всё заработает.</div>
+
+  </noscript>
+  <div class="eyebrow" id="edition">Новогодние каникулы · январь 2027</div>
+  <h1>Сочи, Абхазия и&nbsp;Красная Поляна</h1>
+
+<p class="muted" style="max-width:70ch">Это твоя версия плана. Отметь слева, когда ты свободна и когда у тебя смены, — план по дням справа пересчитается сам. Отметки сохраняются в этом браузере, так что просто пришли мне даты.</p>
+  <div class="summary">
+    <div><b id="sumDates">—</b><span>поездка, от выезда до дома</span></div>
+    <div><b id="sumAbh">—</b><span>Абхазия</span></div>
+    <div><b id="sumPol">—</b><span>Красная Поляна</span></div>
+    <div id="sumBdBox"><b id="sumBd">—</b><span>7 января, день рождения</span></div>
+  </div>
+</div>
+
+<div class="layout">
+<aside>
+  <div class="panel">
+    <h2>Даты</h2>
+    <div class="field">
+      <label for="startDate">Выезд поездом из Симферополя</label>
+      <select id="startDate"></select>
+      <span class="small muted">Поезд 316С уходит в 12:40, в Адлере на следующий день в 09:13.</span>
+    </div>
+    <div class="field"><span class="lbl">Ночей в Абхазии</span>
+      <div class="step"><button type="button" id="abhMinus" aria-label="Меньше ночей в Абхазии">−</button><output id="abhOut">2</output><button type="button" id="abhPlus" aria-label="Больше ночей в Абхазии">+</button></div>
+    </div>
+    <div class="field"><span class="lbl">Ночей в Красной Поляне</span>
+      <div class="step"><button type="button" id="polMinus" aria-label="Меньше ночей в Поляне">−</button><output id="polOut">3</output><button type="button" id="polPlus" aria-label="Больше ночей в Поляне">+</button></div>
+    </div>
+    <div class="field">
+      <label for="backDate">Обратный поезд из Адлера</label>
+      <select id="backDate"></select>
+      <span class="small muted" id="backNote"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+
+<h2>Когда ты можешь поехать</h2>
+    <p class="small muted">Поставь ползунки: с какого по какое число ты свободна. Дальше планировщик сам скажет, помещается поездка в эти дни или нет.</p>
+    <div class="field"><span class="lbl">Свободна с</span>
+      <div class="range"><input type="range" id="freeFrom" min="-1" max="19" step="1" aria-label="Первый свободный день"><b id="freeFromOut">—</b></div>
+    </div>
+    <div class="field"><span class="lbl">по</span>
+      <div class="range"><input type="range" id="freeTo" min="-1" max="19" step="1" aria-label="Последний свободный день"><b id="freeToOut">—</b></div>
+    </div>
+    <p class="small muted" id="freeSum"></p>
+  </div>
+
+  <div class="panel">
+
+<h2>Твои смены</h2>
+    <p class="small muted">Нажми на дни, когда у тебя смены. Красным подсветятся те, что попадают на поездку.</p>
+    <div class="cal" id="cal"></div>
+    <div class="legend"><span><i style="border:1px solid var(--accent)"></i>поездка</span><span><i style="background:var(--ink)"></i>работа</span><span><i style="background:var(--bad)"></i>накладка</span><span><i style="background:var(--leaf-soft)"></i>свободна</span></div>
+  </div>
+
+  <div class="panel">
+    <h2>Дорога и жильё</h2>
+    <div class="field"><span class="lbl">Поезд</span>
+      <div class="seg" data-key="trainClass"><button type="button" data-v="plaz">Плацкарт</button><button type="button" data-v="kupe">Купе</button></div>
+    </div>
+    <div class="field"><span class="lbl">Как ездить по Абхазии</span>
+      <div class="seg" data-key="abhTransport"><button type="button" data-v="taxi">Такси</button><button type="button" data-v="bus">Маршрутки и группы</button><button type="button" data-v="guide">Свой гид с машиной</button></div>
+    </div>
+    <div class="field"><span class="lbl">Жильё в Гагре</span>
+      <div class="seg" data-key="gagraLevel"><button type="button" data-v="gh">Гостевой дом</button><button type="button" data-v="hotel">Отель</button></div>
+    </div>
+    <div class="field">
+      <label for="polPlace">Где жить в горах</label>
+      <select id="polPlace">
+        <option value="posyolok">Красная Поляна, посёлок</option>
+        <option value="roza">Роза Хутор</option>
+        <option value="gorki">Горки Город (Эсто-Садок)</option>
+      </select>
+    </div>
+    <div class="field"><span class="lbl">Жильё в горах</span>
+      <div class="seg" data-key="polLevel"><button type="button" data-v="gh">Гостевой дом</button><button type="button" data-v="hotel">Отель</button></div>
+    </div>
+    <div class="field"><span class="lbl">Еда</span>
+      <div class="seg" data-key="food"><button type="button" data-v="rest">Рестораны</button><button type="button" data-v="snack">Кафе и перекусы</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Чем заняться</h2>
+    <div class="field"><span class="lbl">Абхазия</span><div class="checks" id="abhActs"></div></div>
+    <div class="field"><span class="lbl">Горы и Сочи</span><div class="checks" id="polActs"></div></div>
+  </div>
+</aside>
+
+<main>
+  <section>
+    <div class="sec-head"><h2>План по дням</h2><div class="btns"><button type="button" class="btn" id="copyPlan">Скопировать план текстом</button></div></div>
+    <div class="alerts" id="alerts"></div>
+    <div class="days" id="days"></div>
+    <textarea id="planText" hidden readonly aria-label="План текстом"></textarea>
+
+    <p class="foot">Время поездов — на 25 октября 2026. Туда едем ночь, обратно почти сутки. Билеты я сверю и куплю сам.</p>
+  </section>
+
+
+
+  <section>
+    <h2>Как одеться</h2>
+    <div class="cards" id="clothes"></div>
+  </section>
+
+
+
+  <section>
+    <div class="sec-head"><h2>Прислать Mars</h2><button type="button" class="btn" id="copyWish">Скопировать мой выбор</button></div>
+    <p class="small muted">Отметь свободные дни, смены и галочки «чем заняться» — а потом нажми кнопку и пришли мне текст в любом мессенджере. Список вещей и бронирования я беру на себя.</p>
+    <div class="field"><label for="wish">Что ещё хочешь увидеть или сделать</label>
+      <textarea id="wish" rows="3" placeholder="Например: конная прогулка, рынок в Гагре, просто посидеть у моря"></textarea></div>
+    <textarea id="wishText" hidden readonly aria-label="Мой выбор текстом"></textarea>
+  </section>
+
+  
+
+</main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var Y = 2027;
+var BD = 7; // 7 января
+var CAL_FIRST = -1, CAL_LAST = 19; // 30 дек … 19 янв: самая длинная поездка (выезд 6 янв, 4 ноч. Абхазия, 7 в горах) кончается 19-го
+
+/* подписи, которые звучат по-разному в двух версиях */
+
+var T = {
+  shiftConflict: 'У тебя смены в дни поездки: ',
+  freeOk: 'целиком в твои свободные дни, накладок нет.',
+  freeOut: 'выходит за твои свободные дни (',
+  freeShort: 'у тебя свободно ',
+  bdOut: '7 января не попадает в твои свободные дни — день рождения придётся на рабочий день.'
+};
+var WD = ['вс','пн','вт','ср','чт','пт','сб'];
+var MON = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+
+function dt(day){ return new Date(Y, 0, day); } // day может быть ≤0 (декабрь)
+function lbl(day){ var d = dt(day); return d.getDate() + ' ' + MON[d.getMonth()]; }
+function wd(day){ return WD[dt(day).getDay()]; }
+function key(day){ var d = dt(day); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+function p2(n){ return (n < 10 ? '0' : '') + n; }
+function isoDate(day){ var d = dt(day); return d.getFullYear() + '-' + p2(d.getMonth()+1) + '-' + p2(d.getDate()); }
+function ruDate(day){ var d = dt(day); return p2(d.getDate()) + '.' + p2(d.getMonth()+1) + '.' + d.getFullYear(); }
+
+
+
+var ABH_ACTS = [
+  {id:'mand', name:'Мандариновый сад и фотосессия', note:'полдня, лучше в день приезда', cap:0.5},
+  {id:'photog', name:'С фотографом', note:'1,5 часа', cap:0, parent:'mand'},
+  {id:'rica', name:'Озеро Рица и Гегский водопад', note:'весь день, в снегопад дорогу закрывают', cap:1},
+  {id:'afon', name:'Новый Афон и пещера', note:'полдня', cap:0.5},
+  {id:'kyn', name:'Термальные источники Кындыг', note:'полдня, ≈2 ч от Гагры', cap:0.5},
+  {id:'gagra', name:'Старая Гагра и колоннада', note:'пара часов', cap:0.5}
+];
+var POL_ACTS = [
+  {id:'peak', name:'Подъём на Роза Пик', note:'полдня', cap:0.5},
+  {id:'ski', name:'Катание (прокат)', note:'весь день', cap:1},
+  {id:'sochi', name:'Олимпийский парк и набережная Сочи', note:'полдня', cap:0.5},
+  {id:'spa', name:'СПА или бассейн', note:'полдня', cap:0.5}
+];
+var ACT_TEXT = {
+  mand:'Мандариновый сад, фотосессия', rica:'Озеро Рица и Гегский водопад', afon:'Новый Афон: монастырь и пещера',
+  kyn:'Термальные источники Кындыг', gagra:'Старая Гагра, колоннада, Приморский парк',
+  peak:'Подъём на Роза Пик', ski:'Катание на лыжах или сноуборде', sochi:'Олимпийский парк и набережная Сочи', spa:'СПА или бассейн'
+};
+function actText(id){ return ACT_TEXT[id] + (id === 'mand' && S.acts.photog ? ', с фотографом' : ''); }
+var PLACE = {posyolok:'Красная Поляна', roza:'Роза Хутор', gorki:'Горки Город'};
+var PLACE_TO = {posyolok:'Красной Поляны', roza:'Розы Хутор', gorki:'Горки Города'};
+
+var DEFAULT = {start:3, abh:2, pol:3, trainClass:'kupe', abhTransport:'taxi', gagraLevel:'hotel', polPlace:'posyolok', polLevel:'hotel', food:'rest',
+  acts:{mand:true, photog:true, rica:true, afon:false, kyn:false, gagra:true, peak:true, ski:false, sochi:true, spa:false}, work:{},
+  free:{from:-1, to:19},
+  touched:{free:false, work:false, acts:false}};
+
+function load(k, def){ try { var v = JSON.parse(localStorage.getItem(k)); return v || def; } catch(e){ return def; } }
+function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+var S = load('trip27-state', null);
+if (!S) S = JSON.parse(JSON.stringify(DEFAULT));
+for (var dk in DEFAULT) if (S[dk] === undefined) S[dk] = JSON.parse(JSON.stringify(DEFAULT[dk]));
+for (var ak in DEFAULT.acts) if (S.acts[ak] === undefined) S.acts[ak] = DEFAULT.acts[ak];
+for (var fk in DEFAULT.free) if (typeof S.free[fk] !== 'number') S.free[fk] = DEFAULT.free[fk];
+for (var tk in DEFAULT.touched) if (typeof S.touched[tk] !== 'boolean') S.touched[tk] = DEFAULT.touched[tk];
+if (S.free.to === 13 && !S.touched.free) S.free.to = CAL_LAST;   // состояние, сохранённое до расширения календаря
+
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ---------- построение плана ---------- */
+function build(){
+  var s = S.start, A = S.abh, K = S.pol;
+  var arrive = s + 1;            // приезд в Адлер
+  var P = arrive + A;            // заезд в горы
+  var R = P + K;                 // выезд из гор, поезд
+  var home = R + 1;
+  var tr = S.abhTransport;
+  var alerts = [];
+  var days = [];
+  function day(n){ var o = {n:n, title:'', items:[], night:'', zone:''}; days.push(o); return o; }
+  function it(o, t, x){ o.items.push([t, x]); }
+
+  // выезд
+  var d0 = day(s); d0.title = 'Симферополь → Адлер'; d0.zone = 'road';
+  it(d0, '12:00', 'Быть на вокзале Симферополь');
+  it(d0, '12:40', 'Поезд 316С Симферополь → Адлер, ' + (S.trainClass === 'kupe' ? 'купе' : 'плацкарт') + ', в пути ≈20,5 ч');
+  d0.night = 'в поезде';
+
+  // Абхазия: слоты
+  var aSlots = []; // {day, half}
+  var aDays = [];
+  for (var i = 0; i <= A; i++) aDays.push(day(arrive + i));
+  aDays.forEach(function(o, i){ o.zone = 'abh'; });
+  if (A > 0){
+    aSlots.push({d:0, h:'pm'});
+    for (i = 1; i < A; i++){ aSlots.push({d:i, h:'am'}); aSlots.push({d:i, h:'pm'}); }
+    aSlots.push({d:A, h:'am'});
+  }
+  var used = {};
+  function free(slot){ return !used[slot.d + slot.h]; }
+  function take(slot, id){ used[slot.d + slot.h] = id; }
+  var placed = {}; var unplaced = [];
+  // целый день
+  ['rica'].forEach(function(id){
+    if (!S.acts[id]) return;
+    for (var d = 1; d < A; d++){ if (!used[d+'am'] && !used[d+'pm']){ used[d+'am'] = id; used[d+'pm'] = id; placed[id] = d; return; } }
+    unplaced.push(id);
+  });
+  ['mand','afon','kyn','gagra'].forEach(function(id){
+    if (!S.acts[id]) return;
+    var order = aSlots.slice();
+    if (id === 'gagra') order.reverse(); // прогулку по Гагре — ближе к отъезду
+    for (var k = 0; k < order.length; k++){
+      // утро отъезда: только то, что рядом с Гагрой
+      if (order[k].d === A && id !== 'gagra' && id !== 'mand') continue;
+      if (free(order[k])){ take(order[k], id); placed[id] = order[k].d; return; }
+    }
+    unplaced.push(id);
+  });
+
+  var hTime = {am:'10:00', pm:'14:30'};
+  var dinner = S.food === 'rest' ? 'Ужин в ресторане' : 'Ужин в кафе или перекус';
+
+  if (A > 0){
+    var a0 = aDays[0]; a0.title = 'Адлер → Гагра';
+    it(a0, '09:13', 'Прибытие в Адлер');
+    if (tr === 'bus'){ it(a0, '09:30', 'Такси или автобус до КПП Псоу, ≈15 мин'); }
+    else it(a0, '09:30', 'Такси до КПП Псоу, ≈15 мин');
+    it(a0, '10:00', 'Граница пешком: обычно 30 мин, в каникулы до 2 ч');
+    if (tr === 'taxi') it(a0, '12:00', 'Такси до Гагры, ≈30 мин, заселение');
+    else if (tr === 'bus') it(a0, '12:00', 'Маршрутка до Гагры, ≈40 мин, заселение');
+    else it(a0, '12:00', 'Гид встречает после границы, едем в Гагру, заселение');
+    for (i = 0; i <= A; i++){
+      var o = aDays[i];
+      if (i > 0 && i < A) o.title = 'Гагра и окрестности';
+      if (used[i+'am'] && used[i+'am'] === used[i+'pm']){ it(o, '09:00', actText(used[i+'am']) + ' (весь день)'); }
+      else {
+        if (used[i+'am']) it(o, hTime.am, actText(used[i+'am']));
+        if (used[i+'pm']) it(o, hTime.pm, actText(used[i+'pm']));
+      }
+      if (i > 0 && i < A && !used[i+'am'] && !used[i+'pm']) it(o, '', 'Свободный день: море, рынок, кафе');
+      if (i < A){ it(o, '19:00', dinner + ' в Гагре'); o.night = 'Гагра'; }
+    }
+    var aL = aDays[A]; aL.title = 'Гагра → ' + PLACE[S.polPlace]; aL.zone = 'move';
+    it(aL, '12:30', tr === 'bus' ? 'Маршрутка до КПП Псоу' : (tr === 'guide' ? 'Гид отвозит к границе' : 'Такси до КПП Псоу'));
+    it(aL, '13:00', 'Граница пешком');
+    it(aL, '15:00', 'Такси до ' + PLACE_TO[S.polPlace] + ', ≈1–1,5 ч');
+    it(aL, '16:30', 'Заселение');
+    it(aL, '19:00', dinner);
+    aL.night = PLACE[S.polPlace];
+  }
+
+  // Горы
+  var pDays = [];
+  for (i = 1; i < K; i++) pDays.push(day(P + i));
+  var pSlots = [];
+  pDays.forEach(function(o, idx){ o.zone = 'pol'; pSlots.push({d:idx, h:'am'}); pSlots.push({d:idx, h:'pm'}); });
+  var pUsed = {};
+  if (S.acts.ski){
+    var skiDay = -1;
+    for (i = 0; i < pDays.length; i++) if (pDays[i].n !== BD){ skiDay = i; break; }
+    if (skiDay < 0 && pDays.length) skiDay = 0;
+    if (skiDay >= 0){ pUsed[skiDay+'am'] = 'ski'; pUsed[skiDay+'pm'] = 'ski'; } else unplaced.push('ski');
+  }
+  ['peak','sochi','spa'].forEach(function(id){
+    if (!S.acts[id]) return;
+    var order = pSlots.slice();
+    if (id === 'peak'){ order.sort(function(a,b){ return (pDays[a.d].n===BD?0:1) - (pDays[b.d].n===BD?0:1); }); }
+    for (var k = 0; k < order.length; k++){ var sl = order[k]; if (!pUsed[sl.d+sl.h]){ pUsed[sl.d+sl.h] = id; return; } }
+    unplaced.push(id);
+  });
+  pDays.forEach(function(o, idx){
+    o.title = o.n === BD ? 'День рождения' : PLACE[S.polPlace];
+    if (pUsed[idx+'am'] && pUsed[idx+'am'] === pUsed[idx+'pm']) it(o, '09:30', ACT_TEXT[pUsed[idx+'am']] + ' (весь день)');
+    else {
+      if (pUsed[idx+'am']) it(o, '10:00', ACT_TEXT[pUsed[idx+'am']]);
+      if (pUsed[idx+'pm']) it(o, '14:30', ACT_TEXT[pUsed[idx+'pm']]);
+      if (!pUsed[idx+'am'] && !pUsed[idx+'pm']) it(o, '', 'Свободный день: прогулки, канатки, отдых');
+    }
+    it(o, '19:00', o.n === BD ? 'Праздничный ужин на двоих' : dinner);
+    o.night = PLACE[S.polPlace];
+    if (o.n === BD) o.bd = true;
+  });
+
+  var dR = day(R); dR.title = PLACE[S.polPlace] + ' → Симферополь'; dR.zone = 'road';
+  it(dR, '10:00', 'Выезд из отеля, такси или Ласточка до Адлера, ≈1 ч');
+  it(dR, '12:33', 'Поезд 316Э «Таврия» Адлер → Симферополь');
+  dR.night = 'в поезде';
+  var dH = day(home); dH.title = 'Дома'; dH.zone = 'road';
+  it(dH, '11:40', 'Прибытие в Симферополь, в пути ≈23 ч');
+  dH.night = 'дома';
+
+  // проверки
+  if (P > BD){
+    var fixes = [];
+    if (A > 1) fixes.push('убрать ночь в Абхазии');
+    if (s > 0) fixes.push('выехать раньше');
+    alerts.push(['bad', 'В горы заезд ' + lbl(P) + ' — 7 января пройдёт в Абхазии или в дороге.' +
+      (fixes.length ? ' Поможет: ' + fixes.join(' или ') + '.' : ' Поправить нечем: выезд и ночи уже на минимуме.')]);
+  }
+  else if (P === BD) alerts.push(['bad', 'Переезд в горы выпадает на 7 января — день рождения пройдёт в дороге и на границе. Лучше заехать 6-го.']);
+  else if (R <= BD) alerts.push(['bad', 'Выезд из гор ' + lbl(R) + ', до дня рождения. Нужно больше ночей в Поляне.']);
+  else if (P === BD - 1) alerts.push(['good', 'Заезд в горы 6 января: день рождения 7-го уже на месте, без дороги.']);
+  else alerts.push(['good', 'Заезд в горы ' + lbl(P) + ', день рождения 7 января на месте.']);
+  if (S.acts.rica && A < 2) alerts.push(['warn', 'На Рицу нужен целый день — с одной ночью в Абхазии он не помещается.']);
+  var un = unplaced.filter(function(id){ return !(id==='rica' && A<2); });
+  if (un.length) alerts.push(['warn', 'Не помещается: ' + un.map(function(id){ return ACT_TEXT[id]; }).join(', ') + '. Нужна ещё ночь или на одно занятие меньше.']);
+  if (s <= 3 && A >= 1) alerts.push(['warn', 'Граница ' + lbl(arrive) + ' — пик каникул, закладываем до 2 часов на очередь.']);
+  var conflicts = [];
+  for (var dd = s; dd <= home; dd++) if (S.work[key(dd)]) conflicts.push(lbl(dd));
+  if (conflicts.length) alerts.push(['bad', T.shiftConflict + conflicts.join(', ') + '. Нужен отгул или сдвиг дат.']);
+  // свободное окно Кати
+  var fFrom = Math.min(S.free.from, S.free.to), fTo = Math.max(S.free.from, S.free.to);
+  var freeSet = !(fFrom <= CAL_FIRST && fTo >= CAL_LAST);
+  if (freeSet){
+    var need = home - s + 1, have = fTo - fFrom + 1;
+    // сдвиг выезда годится, только если он не ломает 7 января и не наезжает на смены
+    function shiftOk(ns){
+      var P2 = ns + 1 + A, R2 = P2 + K, home2 = R2 + 1;
+      if (!(P2 <= BD - 1 && R2 > BD)) return false;
+      for (var d2 = ns; d2 <= home2; d2++) if (S.work[key(d2)]) return false;
+      return true;
+    }
+    if (s >= fFrom && home <= fTo){
+      // молчим, если уже сказано про смены: два противоположных вывода подряд читать невозможно
+      if (!conflicts.length) alerts.push(['good', 'Поездка ' + lbl(s) + ' – ' + lbl(home) + ' ' + T.freeOk]);
+    } else if (have >= need){
+      var ns = (s < fFrom) ? fFrom : s - (home - fTo);
+      var head = 'Накладка: поездка ' + lbl(s) + ' – ' + lbl(home) + ' ' + T.freeOut + lbl(fFrom) + ' – ' + lbl(fTo) + ').';
+      if (ns >= 0 && ns <= 6 && shiftOk(ns)) alerts.push(['bad', head + ' Если выехать ' + lbl(ns) + ' — помещается.']);
+      else alerts.push(['bad', head + ' Сдвигом выезда не лечится: 7 января должно пройти на месте. Нужен отгул или меньше ночей.']);
+    } else {
+      alerts.push(['bad', 'Накладка: ' + T.freeShort + have + ' дн. (' + lbl(fFrom) + ' – ' + lbl(fTo) + '), а поездка занимает ' + need + ' дн. Нужно короче на ' + (need - have) + ' дн. или ещё отгул.']);
+    }
+    if (BD < fFrom || BD > fTo) alerts.push(['warn', T.bdOut]);
+  }
+  // производственный календарь 2027: 1–8 янв праздники, 9–10 выходные
+  var workdays = [];
+  for (dd = s; dd <= home; dd++){ var w = dt(dd).getDay(); var hol = (dt(dd).getMonth()===0 && dt(dd).getDate()<=8) || dt(dd).getMonth()===11 && dt(dd).getDate()===31; if (!hol && w!==0 && w!==6) workdays.push(lbl(dd)); }
+  if (workdays.length) alerts.push(['warn', 'По обычному календарю рабочие дни в поездке: ' + workdays.join(', ') + '.']);
+
+  // важное вперёд: зелёное, стоящее последним, читается как итог и перебивает красное
+  var RANK = {bad:0, warn:1, good:2};
+  alerts.sort(function(a, b){ return RANK[a[0]] - RANK[b[0]]; });
+  days.sort(function(a,b){ return a.n - b.n; });
+  return {s:s, A:A, K:K, arrive:arrive, P:P, R:R, home:home, days:days, alerts:alerts, placed:placed, aActDays:countActDays(used, A),
+    free:{set:freeSet, from:fFrom, to:fTo}};
+}
+function countActDays(used, A){ var c = 0; for (var i = 0; i <= A; i++) if (used[i+'am'] || used[i+'pm']) c++; return c; }
+
+/* ---------- отрисовка ---------- */
+function renderControls(){
+  var sel = $('startDate');
+  if (!sel.options.length){
+    for (var d = 0; d <= 6; d++){ var o = document.createElement('option'); o.value = d; o.textContent = lbl(d) + ', ' + wd(d); sel.appendChild(o); }
+  }
+  sel.value = S.start;
+  $('abhOut').textContent = S.abh; $('polOut').textContent = S.pol;
+  $('abhMinus').disabled = S.abh <= 1; $('abhPlus').disabled = S.abh >= 4;
+  $('polMinus').disabled = S.pol <= 1; $('polPlus').disabled = S.pol >= 7;
+  var pDay = S.start + 1 + S.abh;            // день заезда в горы
+  var back = $('backDate'), cur = String(S.pol);
+  back.innerHTML = '';
+  for (var k = 1; k <= 7; k++){
+    var o = document.createElement('option');
+    o.value = k; o.textContent = lbl(pDay + k) + ', ' + wd(pDay + k) + ' — ' + k + ' ноч. в горах';
+    back.appendChild(o);
+  }
+  back.value = cur;
+  $('backNote').textContent = 'Поезд 316Э уходит из Адлера в 12:33, в Симферополе ' + lbl(pDay + S.pol + 1) + ' в 11:40. Вечерних рейсов нет — уезжаем днём.';
+  $('freeFrom').value = S.free.from; $('freeTo').value = S.free.to;
+  var ff = Math.min(S.free.from, S.free.to), ft = Math.max(S.free.from, S.free.to);
+  $('freeFromOut').textContent = lbl(S.free.from); $('freeToOut').textContent = lbl(S.free.to);
+  $('freeSum').textContent = (ff <= CAL_FIRST && ft >= CAL_LAST)
+    ? 'Окно не сужено — считаем, что все каникулы свободны.'
+    : 'Свободна ' + (ft - ff + 1) + ' дн.: ' + lbl(ff) + ' – ' + lbl(ft) + '.';
+  $('polPlace').value = S.polPlace;
+  document.querySelectorAll('.seg[data-key]').forEach(function(g){
+    var k = g.getAttribute('data-key');
+    g.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === S[k])); });
+  });
+  function acts(list, el){
+    el.innerHTML = list.map(function(a){
+      if (a.parent && !S.acts[a.parent]) return '';
+      return '<label class="'+(a.parent?'sub':'')+'"><input type="checkbox" data-act="'+a.id+'"'+(S.acts[a.id]?' checked':'')+'><span>'+esc(a.name)+'<small>'+esc(a.note)+'</small></span></label>';
+    }).join('');
+  }
+  acts(ABH_ACTS, $('abhActs')); acts(POL_ACTS, $('polActs'));
+}
+
+function renderCal(plan){
+  var first = CAL_FIRST, last = CAL_LAST;
+  var html = WD.slice(1).concat(WD[0]).map(function(w){ return '<span class="wd">'+w+'</span>'; }).join('');
+  var lead = (dt(first).getDay() + 6) % 7;
+  for (var p = 0; p < lead; p++) html += '<span class="pad"></span>';
+  for (var d = first; d <= last; d++){
+    var cls = [];
+    if (plan.free.set && d >= plan.free.from && d <= plan.free.to) cls.push('free');
+    if (d >= plan.s && d <= plan.home) cls.push('trip');
+    if (S.work[key(d)]) cls.push('work');
+    if (d === BD) cls.push('bd');
+    html += '<button type="button" data-day="'+d+'" class="'+cls.join(' ')+'" aria-pressed="'+(!!S.work[key(d)])+'" aria-label="'+lbl(d)+(S.work[key(d)]?', работа':'')+'">'+dt(d).getDate()+'<small>'+MON[dt(d).getMonth()]+'</small></button>';
+  }
+  $('cal').innerHTML = html;
+}
+
+function renderPlan(plan){
+  $('sumDates').textContent = lbl(plan.s) + ' – ' + lbl(plan.home);
+  $('sumAbh').textContent = plan.A ? lbl(plan.arrive) + ' – ' + lbl(plan.P) : 'нет';
+  $('sumPol').textContent = lbl(plan.P) + ' – ' + lbl(plan.R);
+  var ok = plan.P <= BD - 1 && plan.R > BD;
+  $('sumBd').textContent = ok ? 'на месте' : 'в дороге';
+  $('sumBdBox').className = ok ? 'good' : 'bad';
+
+  $('alerts').innerHTML = plan.alerts.map(function(a){ return '<div class="alert '+(a[0]==='good'?'':a[0])+'">'+esc(a[1])+'</div>'; }).join('');
+  $('days').innerHTML = plan.days.map(function(o){
+    var tag = o.zone === 'abh' ? '<span class="tag abh">Абхазия</span>' : (o.zone === 'pol' ? '<span class="tag">горы</span>' : '');
+    return '<div class="day'+(o.bd?' bd':'')+'"><div class="d">'+lbl(o.n)+'<small>'+wd(o.n)+'</small></div><div><div class="t">'+esc(o.title)+tag+'</div><ul>'+
+      o.items.map(function(x){ return '<li><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></li>'; }).join('')+
+      '</ul></div><div class="n">ночь<b>'+esc(o.night)+'</b></div></div>';
+  }).join('');
+}
+
+
+
+function renderClothes(){
+  var c = [
+    {t:'Поезд', temp:'в вагоне тепло', list:['Удобная одежда и тапочки','Слой, который легко снять','Еда и вода в дорогу']},
+    {t:'Абхазия, побережье', temp:'+8…+12 °C, дожди', list:['Непромокаемая куртка или дождевик','Свитер или флиска под куртку','Обувь, которая не промокает','Для Рицы: шапка и перчатки — там снег']},
+    {t:'Горы, ' + PLACE[S.polPlace], temp:'0…+6 °C внизу, наверху мороз и ветер', list:['Тёплая куртка, шапка, перчатки, шарф','Зимние ботинки с нескользящей подошвой','Солнцезащитные очки — снег слепит','Наряд на праздничный ужин 7 января']}
+  ];
+  if (S.acts.ski) c[2].list.push('Для катания: термобельё, флиска, горнолыжные штаны и куртка (можно взять в прокат), маска, баф');
+  $('clothes').innerHTML = c.map(function(x){ return '<div class="card"><h3>'+esc(x.t)+'</h3><div class="temp">'+esc(x.temp)+'</div><ul>'+x.list.map(function(l){ return '<li>'+esc(l)+'</li>'; }).join('')+'</ul></div>'; }).join('');
+}
+
+
+
+
+
+
+
+var lastPlan = null;
+function render(){
+  var plan = build(); lastPlan = plan;
+  renderControls(); renderCal(plan); renderPlan(plan); renderClothes();
+  
+  save('trip27-state', S);
+}
+
+/* ---------- события ---------- */
+$('startDate').addEventListener('change', function(e){ S.start = +e.target.value; render(); });
+$('polPlace').addEventListener('change', function(e){ S.polPlace = e.target.value; render(); });
+$('abhMinus').onclick = function(){ if (S.abh > 1){ S.abh--; render(); } };
+$('abhPlus').onclick = function(){ if (S.abh < 4){ S.abh++; render(); } };
+$('polMinus').onclick = function(){ if (S.pol > 1){ S.pol--; render(); } };
+$('polPlus').onclick = function(){ if (S.pol < 7){ S.pol++; render(); } };
+$('backDate').addEventListener('change', function(e){ S.pol = +e.target.value; render(); });
+$('freeFrom').addEventListener('input', function(e){ S.free.from = +e.target.value; if (S.free.from > S.free.to) S.free.to = S.free.from; S.touched.free = true; render(); });
+$('freeTo').addEventListener('input', function(e){ S.free.to = +e.target.value; if (S.free.to < S.free.from) S.free.from = S.free.to; S.touched.free = true; render(); });
+document.querySelectorAll('.seg[data-key]').forEach(function(g){
+  g.addEventListener('click', function(e){ var b = e.target.closest('button'); if (!b) return; S[g.getAttribute('data-key')] = b.getAttribute('data-v'); render(); });
+});
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if (t.dataset.act){ S.acts[t.dataset.act] = t.checked; S.touched.acts = true; render(); }
+  
+});
+$('cal').addEventListener('click', function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  var k = key(+b.dataset.day);
+  if (S.work[k]) delete S.work[k]; else S.work[k] = true;
+  S.touched.work = true;
+  render();
+});
+
+function planLines(){
+  var p = lastPlan, out = ['Поездка ' + lbl(p.s) + ' – ' + lbl(p.home)];
+  p.days.forEach(function(o){
+    out.push(''); out.push(lbl(o.n) + ', ' + wd(o.n) + ' — ' + o.title);
+    o.items.forEach(function(x){ out.push((x[0] ? x[0] + '  ' : '') + x[1]); });
+    out.push('Ночь: ' + o.night);
+  });
+  return out;
+}
+
+var WISH = load('trip27-wish', '');
+if ($('wish')){
+  $('wish').value = WISH;
+  $('wish').addEventListener('input', function(e){ WISH = e.target.value; save('trip27-wish', WISH); });
+  $('copyWish').onclick = function(){
+    var pl = lastPlan || build();
+    var ff = Math.min(S.free.from, S.free.to), ft = Math.max(S.free.from, S.free.to);
+    var L = ['Мой выбор по поездке:'];
+    L.push('Свободна: ' + (!S.touched.free ? 'НЕ ОТМЕЧАЛА' : ((ff <= CAL_FIRST && ft >= CAL_LAST) ? 'все каникулы' : lbl(ff) + ' – ' + lbl(ft))));
+    var sh = [];
+    for (var d = CAL_FIRST; d <= CAL_LAST; d++) if (S.work[key(d)]) sh.push(lbl(d));
+    L.push('Смены: ' + (!S.touched.work ? 'НЕ ОТМЕЧАЛА' : (sh.length ? sh.join(', ') : 'нет')));
+    L.push('Поездка по плану: ' + lbl(pl.s) + ' – ' + lbl(pl.home) + ' (' + pl.A + ' ноч. Абхазия, ' + pl.K + ' ноч. горы)');
+    var want = [];
+    var collect = function(list){
+      list.forEach(function(a){ if (!a.parent && S.acts[a.id]) want.push(actText(a.id)); });
+    };
+    collect(ABH_ACTS); collect(POL_ACTS);
+    L.push('Хочу: ' + (!S.touched.acts ? 'НЕ ОТМЕЧАЛА, оставила как было — ' + want.join('; ') : (want.length ? want.join('; ') : 'ничего не выбрала')));
+    if (WISH.trim()) L.push('Ещё хочу: ' + WISH.trim());
+    var text = L.join('\n'), ta = $('wishText');
+    ta.value = text;
+    var done = function(){ $('copyWish').textContent = 'Скопировано'; setTimeout(function(){ $('copyWish').textContent = 'Скопировать мой выбор'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function(){ ta.hidden = false; ta.select(); });
+    else { ta.hidden = false; ta.select(); }
+  };
+}
+
+$('copyPlan').onclick = function(){
+  var text = planLines().join('\n'), ta = $('planText');
+  ta.value = text;
+  var done = function(){ $('copyPlan').textContent = 'Скопировано'; setTimeout(function(){ $('copyPlan').textContent = 'Скопировать план текстом'; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ ta.hidden = false; ta.select(); });
+  } else { ta.hidden = false; ta.select(); }
+};
+
+
+render();
+})();
+</script>
+</body>
+</html>
